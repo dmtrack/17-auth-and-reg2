@@ -1,21 +1,22 @@
-import React, {useEffect, useState} from "react";
-import {useHistory} from "react-router-dom";
-import {validator} from "../../../utils/validator";
+import React, { useEffect, useState } from "react";
+import { useHistory } from "react-router-dom";
+import { validator } from "../../../utils/validator";
 import TextField from "../../common/form/textField";
 import SelectField from "../../common/form/selectField";
 import RadioField from "../../common/form/radioField";
 import MultiSelectField from "../../common/form/multiSelectField";
 import BackHistoryButton from "../../common/backButton";
-import {useAuth} from "../../../hooks/useAuth";
-import {useProfessions} from "../../../hooks/useProfession";
-import {useQualities} from "../../../hooks/useQualities";
+import { useAuth } from "../../../hooks/useAuth";
+import { useProfessions } from "../../../hooks/useProfession";
+import { useQualities } from "../../../hooks/useQualities";
 
 const EditUserPage = () => {
-  const {currentUser, editUserData} = useAuth();
+  const { currentUser, editUserData } = useAuth();
   const history = useHistory();
   const [isLoading, setIsLoading] = useState(false);
-  const {professions} = useProfessions();
-  const {qualities} = useQualities();
+  const { professions, professionsIsLoading, setProfessionsLoading } =
+    useProfessions();
+  const { qualities, qualitiesIsLoading, setQualitiesLoading } = useQualities();
   const [errors, setErrors] = useState({});
 
   const professionsList = professions.map((p) => ({
@@ -79,18 +80,21 @@ const EditUserPage = () => {
       setErrors(error);
     }
   };
-
   useEffect(() => {
+    setProfessionsLoading(true);
+    setQualitiesLoading(true);
     setData((prevState) => ({
       ...prevState,
       ...data,
       qualities: getQualities(currentUser.qualities),
-      profession: getProfessionById(currentUser.profession),
+      profession: currentUser.profession,
       name: currentUser.name,
       email: currentUser.email,
       id: currentUser._id,
       sex: currentUser.sex,
     }));
+    setProfessionsLoading(false);
+    setQualitiesLoading(false);
     setIsLoading(false);
   }, []);
 
@@ -134,72 +138,74 @@ const EditUserPage = () => {
     return Object.keys(errors).length === 0;
   };
   const isValid = Object.keys(errors).length === 0;
-  return !isLoading && Object.keys(qualities).length > 0 ? (
+  console.log(data);
+  return (
+    !professionsIsLoading &&
+    !qualitiesIsLoading && (
       <div className="container mt-5">
-        <BackHistoryButton/>
+        <BackHistoryButton />
         <div className="row">
           <div className="col-md-6 offset-md-3 shadow p-4">
             {!isLoading ? (
-                <form onSubmit={handleSubmit}>
-                  <TextField
-                      label="Имя"
-                      name="name"
-                      value={data.name}
-                      onChange={handleChange}
-                      error={errors.name}
-                  />
-                  <TextField
-                      label="Электронная почта"
-                      name="email"
-                      value={data.email}
-                      onChange={handleChange}
-                      error={errors.email}
-                  />
+              <form onSubmit={handleSubmit}>
+                <TextField
+                  label="Имя"
+                  name="name"
+                  value={data.name}
+                  onChange={handleChange}
+                  error={errors.name}
+                />
+                <TextField
+                  label="Электронная почта"
+                  name="email"
+                  value={data.email}
+                  onChange={handleChange}
+                  error={errors.email}
+                />
 
-                  <SelectField
-                      label="Выбери свою профессию"
-                      defaultOption="Choose..."
-                      options={professionsList}
-                      name="profession"
-                      onChange={handleChange}
-                      value={data.profession}
-                      error={errors.profession}
-                  />
-                  <RadioField
-                      options={[
-                        {name: "Male", value: "male"},
-                        {name: "Female", value: "female"},
-                        {name: "Other", value: "other"},
-                      ]}
-                      value={data.sex}
-                      name="sex"
-                      onChange={handleChange}
-                      label="Выберите ваш пол"
-                  />
-                  <MultiSelectField
-                      key={data.qualities}
-                      defaultValue={data.qualities}
-                      options={transformData(qualities)}
-                      onChange={handleChange}
-                      name="qualities"
-                      label="Выберите ваши качества"
-                  />
-                  <button
-                      type="submit"
-                      disabled={!isValid}
-                      className="btn btn-primary w-100 mx-auto"
-                  >
-                    Обновить
-                  </button>
-                </form>
+                <SelectField
+                  label="Выбери свою профессию"
+                  defaultOption="Choose..."
+                  name="profession"
+                  onChange={handleChange}
+                  value={getProfessionById(data.profession)}
+                  options={professionsList}
+                  error={errors.profession}
+                />
+                <RadioField
+                  options={[
+                    { name: "Male", value: "male" },
+                    { name: "Female", value: "female" },
+                    { name: "Other", value: "other" },
+                  ]}
+                  value={data.sex}
+                  name="sex"
+                  onChange={handleChange}
+                  label="Выберите ваш пол"
+                />
+                <MultiSelectField
+                  key={data.qualities}
+                  defaultValue={data.qualities}
+                  options={transformData(qualities)}
+                  onChange={handleChange}
+                  name="qualities"
+                  label="Выберите ваши качества"
+                />
+                <button
+                  type="submit"
+                  disabled={!isValid}
+                  className="btn btn-primary w-100 mx-auto"
+                >
+                  Обновить
+                </button>
+              </form>
             ) : (
-                "Loading..."
+              "Loading..."
             )}
           </div>
         </div>
       </div>
-  ) : (
-      "Loading"
+    )
   );
 };
 export default EditUserPage;
