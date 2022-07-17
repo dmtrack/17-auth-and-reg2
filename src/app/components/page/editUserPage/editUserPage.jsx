@@ -128,7 +128,6 @@ const EditUserPage = () => {
   }, [data]);
 
   const handleChange = (target) => {
-    console.log(target.value);
     setData((prevState) => ({
       ...prevState,
       [target.name]: target.value,
@@ -142,7 +141,6 @@ const EditUserPage = () => {
     return Object.keys(errors).length === 0;
   };
   const isValid = Object.keys(errors).length === 0;
-  console.log(data);
   return (
     !professionsLoadingStatus &&
     !qualitiesLoadingStatus && (
@@ -172,7 +170,7 @@ const EditUserPage = () => {
                   defaultOption="Choose..."
                   name="profession"
                   onChange={handleChange}
-                  value={getProfessionById(data.profession)}
+                  value={data.profession}
                   options={professionsList}
                   error={errors.profession}
                 />
