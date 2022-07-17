@@ -7,17 +7,25 @@ import RadioField from "../../common/form/radioField";
 import MultiSelectField from "../../common/form/multiSelectField";
 import BackHistoryButton from "../../common/backButton";
 import { useAuth } from "../../../hooks/useAuth";
-import { useProfessions } from "../../../hooks/useProfession";
-import { useQualities } from "../../../hooks/useQualities";
+import { useSelector } from "react-redux";
+import {
+  getQualities,
+  getQualitiesLoadingStatus,
+} from "../../../store/qualities";
+import {
+  getProfessions,
+  getProfessionsLoadingStatus,
+} from "../../../store/professions";
 
 const EditUserPage = () => {
   const { currentUser, editUserData } = useAuth();
   const history = useHistory();
   const [isLoading, setIsLoading] = useState(false);
-  const { professions, professionsIsLoading, setProfessionsLoading } =
-    useProfessions();
-  const { qualities, qualitiesIsLoading, setQualitiesLoading } = useQualities();
   const [errors, setErrors] = useState({});
+  const qualities = useSelector(getQualities());
+  const qualitiesLoadingStatus = useSelector(getQualitiesLoadingStatus());
+  const professions = useSelector(getProfessions());
+  const professionsLoadingStatus = useSelector(getProfessionsLoadingStatus());
 
   const professionsList = professions.map((p) => ({
     label: p.name,
@@ -32,7 +40,7 @@ const EditUserPage = () => {
     qualities: [],
   });
 
-  const getQualities = (elements) => {
+  const getQualitiesList = (elements) => {
     const qualitiesArray = [];
     for (const elem of elements) {
       for (const quality in qualities) {
@@ -81,20 +89,16 @@ const EditUserPage = () => {
     }
   };
   useEffect(() => {
-    setProfessionsLoading(true);
-    setQualitiesLoading(true);
     setData((prevState) => ({
       ...prevState,
       ...data,
-      qualities: getQualities(currentUser.qualities),
+      qualities: getQualitiesList(currentUser.qualities),
       profession: currentUser.profession,
       name: currentUser.name,
       email: currentUser.email,
       id: currentUser._id,
       sex: currentUser.sex,
     }));
-    setProfessionsLoading(false);
-    setQualitiesLoading(false);
     setIsLoading(false);
   }, []);
 
@@ -140,8 +144,8 @@ const EditUserPage = () => {
   const isValid = Object.keys(errors).length === 0;
   console.log(data);
   return (
-    !professionsIsLoading &&
-    !qualitiesIsLoading && (
+    !professionsLoadingStatus &&
+    !qualitiesLoadingStatus && (
       <div className="container mt-5">
         <BackHistoryButton />
         <div className="row">
